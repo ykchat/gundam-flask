@@ -25,9 +25,13 @@ if __name__ == '__main__':
 
     port = config['port']
 
-    url = 'mongodb://' + config['mongodb']['host'] + '/gundam_flask'
+    mongodb_host = config['mongodb']['host']
+    # for Docker link
+    mongodb_host = os.getenv('MONGO_PORT_27017_TCP_ADDR', mongodb_host)
 
-    client = MongoClient(url)
+    mongodb_url = "mongodb://%s/gundam_flask" % (mongodb_host)
+
+    client = MongoClient(mongodb_url)
     db = client.get_default_database()
 
     api.add_resource(HelloWorld, '/api/ping')
