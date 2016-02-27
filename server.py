@@ -24,12 +24,19 @@ if __name__ == '__main__':
     config = yaml.load(file('./config/server.yml'))['server']
 
     port = config['port']
+    # for Cloud Foundry
+    port = int(os.getenv('PORT', port))
 
-    mongodb_host = config['mongodb']['host']
-    # for Docker link
-    mongodb_host = os.getenv('MONGO_PORT_27017_TCP_ADDR', mongodb_host)
-
-    mongodb_url = "mongodb://%s/gundam_flask" % (mongodb_host)
+    mongodb_url = ''
+    if 'VCAP_SERVICES' in os.environ:
+        # for Cloud Foundry
+        services = json.loads(os.environ['VCAP_SERVICES'])
+        mongodb_url = services['mongolab'][0]['credentials']['uri']
+    else:
+        mongodb_host = config['mongodb']['host']
+        # for Docker link
+        mongodb_host = os.getenv('MONGO_PORT_27017_TCP_ADDR', mongodb_host)
+        mongodb_url = "mongodb://%s/gundam_flask" % (mongodb_host)
 
     client = MongoClient(mongodb_url)
     db = client.get_default_database()
